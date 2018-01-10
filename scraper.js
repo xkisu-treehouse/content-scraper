@@ -1,7 +1,7 @@
 const fs = require('fs');
 const request = require('request');
 const cheerio = require('cheerio');
-const writeCSV  = require('write-csv');
+var json2csv = require('json2csv');
 
 const baseURL = 'http://www.shirts4mike.com/shirts.php';
 
@@ -56,16 +56,32 @@ request(baseURL, function(error, response, html){
                 // check if we've gotten all the shirts
                 if(shirtUrls.length == 0) {
                     var d = new Date();
-                    var date = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+                    var date = require('moment')().format('YYYY-MM-DD');
 
-                    writeCSV('./data/'+date+'.csv', shirtDetails);
+                    var csv = json2csv({ 
+                        data: shirtDetails, 
+                        fields: [
+                            'title',
+                            'price',
+                            'image',
+                            'url'
+                        ],
+                        quotes: ''
+                    });
+                    
+                   fs.writeFile('./data/'+date+'.csv', csv, function(err) {
+                     if (err) throw err;
+                     console.log('file saved');
+                   });
                 }
             });
         });
     } else {
         //handle the errors 
-        if(response.statusCode == '404'){
-            console.log('There’s been a 404 error. Cannot connect to the to http://shirts4mike.com.');
+        if(error.code == 'ENOTFOUND'){
+            console.log('There’s been an error! Unable to connect to ' + baseURL);
+        } else {
+            cdonsole.log('Unknown error has occured');
         }
 
     }
