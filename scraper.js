@@ -1,6 +1,7 @@
 const fs = require('fs');
 const request = require('request');
 const cheerio = require('cheerio');
+const moment = require('moment');
 var json2csv = require('json2csv');
 
 const baseURL = 'http://www.shirts4mike.com/shirts.php';
@@ -43,20 +44,22 @@ request(baseURL, function(error, response, html){
                     'title': '', 
                     'price': '', 
                     'image': '',
-                    'url': ''
+                    'url': '',
+                    'time': ''
                 };
 
                 shirt.title = $('.shirt-details h1').text().split(',')[0].replace(/.{4}/, '');
                 shirt.price = $('.price').html();
                 shirt.image = $('.shirt-picture img').attr('src');
                 shirt.url = url;
+                shirt.time = moment().format('HH:mm:ss');
 
                 shirtDetails.push(shirt);
 
                 // check if we've gotten all the shirts
                 if(shirtUrls.length == 0) {
                     var d = new Date();
-                    var date = require('moment')().format('YYYY-MM-DD');
+                    var date = moment().format('YYYY-MM-DD');
 
                     var csv = json2csv({ 
                         data: shirtDetails, 
@@ -64,7 +67,8 @@ request(baseURL, function(error, response, html){
                             'title',
                             'price',
                             'image',
-                            'url'
+                            'url',
+                            'time'
                         ],
                         quotes: ''
                     });
